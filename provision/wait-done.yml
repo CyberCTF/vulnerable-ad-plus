@@ -1,0 +1,22 @@
+# One round of waiting for run-vulnadplus.ps1 to finish: WinRM restarts once while it runs, so
+# each round first waits for the connection, and an unreachable check just means "not yet".
+- when: not (vadp_done | default(false))
+  block:
+    - name: Connection
+      ansible.builtin.wait_for_connection:
+        timeout: 600
+
+    - name: Done yet?
+      ansible.windows.win_stat:
+        path: C:\vulnerable-AD-plus\done
+      register: vadp_stat
+      ignore_unreachable: true
+
+    - name: Remember
+      ansible.builtin.set_fact:
+        vadp_done: "{{ (vadp_stat.stat | default({})).exists | default(false) }}"
+
+    - name: Not yet
+      ansible.builtin.pause:
+        seconds: 20
+      when: not (vadp_done | bool)

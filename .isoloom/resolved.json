@@ -1,0 +1,184 @@
+{
+  "generated_by_isoloom": "from isoloom.yml; don't edit: change the spec and run `isoloom generate` (`isoloom check` fails when this file is out of date)",
+  "resolved_version": 1,
+  "name": "vulnerable-ad-plus",
+  "instance": null,
+  "inputs": [],
+  "networks": {
+    "lab": {
+      "cidr": "10.60.85.0/24",
+      "docker_cidr": "10.60.85.0/24",
+      "internet": true,
+      "gateway": null,
+      "gateway_address": "10.60.85.1",
+      "router": null,
+      "controller": "10.60.85.253"
+    }
+  },
+  "reach": [],
+  "machines": {
+    "dc01": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "vm"
+      ],
+      "arch": "amd64",
+      "os": "windows-server-2019",
+      "windows": true,
+      "addresses": {
+        "lab": "10.60.85.10"
+      },
+      "docker_addresses": {
+        "lab": "10.60.85.10"
+      },
+      "services": [
+        {
+          "port": 53,
+          "name": "dns",
+          "http": false,
+          "publish": null
+        },
+        {
+          "port": 88,
+          "name": "kerberos",
+          "http": false,
+          "publish": null
+        },
+        {
+          "port": 135,
+          "name": "rpc",
+          "http": false,
+          "publish": null
+        },
+        {
+          "port": 389,
+          "name": "ldap",
+          "http": false,
+          "publish": null
+        },
+        {
+          "port": 445,
+          "name": "smb",
+          "http": false,
+          "publish": null
+        },
+        {
+          "port": 5985,
+          "name": "winrm",
+          "http": false,
+          "publish": null
+        }
+      ],
+      "depends_on": [],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 2,
+        "memory_mb": 3072,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": false
+    }
+  },
+  "start_order": [
+    "dc01"
+  ],
+  "clones": {},
+  "tools": {},
+  "groups": {},
+  "router": null,
+  "controller": {
+    "addresses": {
+      "lab": "10.60.85.253"
+    }
+  },
+  "published": [],
+  "targets": {
+    "possible": [
+      "vagrant",
+      "proxmox",
+      "cloud-vm"
+    ],
+    "generated": [
+      "vagrant",
+      "cloud-vm"
+    ],
+    "refused": {
+      "proxmox": "machine `dc01`: no Proxmox image for `windows-server-2019` yet (Debian, Ubuntu, Rocky, AlmaLinux, CentOS 7)"
+    },
+    "not_possible": {
+      "docker": "needs `docker:` on dc01",
+      "hosted": "needs `docker:` on dc01",
+      "docker-vm": "needs `docker:` on dc01",
+      "cloud-docker": "needs `docker:` on dc01",
+      "kubernetes": "needs `docker:` on dc01",
+      "hybrid": "only when some machines are containers and others are VMs",
+      "external": "needs `external:` on dc01"
+    }
+  },
+  "checks": {
+    "default_position": "networks",
+    "positions": [
+      {
+        "position": "networks",
+        "machine": null,
+        "runner": "isoloom-check",
+        "checks": [
+          {
+            "name": "dns answers",
+            "derived": false,
+            "kind": "tcp",
+            "target": "dc01:53",
+            "expect": "open",
+            "wait": 300
+          },
+          {
+            "name": "kerberos answers",
+            "derived": false,
+            "kind": "tcp",
+            "target": "dc01:88",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "ldap answers",
+            "derived": false,
+            "kind": "tcp",
+            "target": "dc01:389",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "smb answers",
+            "derived": false,
+            "kind": "tcp",
+            "target": "dc01:445",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "winrm answers",
+            "derived": false,
+            "kind": "tcp",
+            "target": "dc01:5985",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "checks/vulnerable-ad-plus.sh",
+            "derived": false,
+            "kind": "script",
+            "target": "checks/vulnerable-ad-plus.sh",
+            "expect": "",
+            "wait": 0
+          }
+        ]
+      }
+    ]
+  },
+  "message": "vulnerable-AD-plus is up: dc01, the domain controller of change.me, at 10.60.85.10.\nUsers and paths are random on every build. Start anonymously (LDAP, SMB), find a first\naccount, then chain ACLs to Domain Admin.\n"
+}

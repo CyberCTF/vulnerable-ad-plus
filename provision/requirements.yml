@@ -1,0 +1,4 @@
+# The Ansible collections the lab's playbook uses, pinned.
+collections:
+  - { name: ansible.windows, version: 2.5.0 }
+  - { name: microsoft.ad, version: 1.7.1 }

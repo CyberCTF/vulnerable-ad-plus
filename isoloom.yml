@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://www.isoloom.com/schema/v1.json
+# vulnerable-AD-plus (by WaterExecution, a fork of vulnerable-AD): one Windows Server 2019 domain
+# controller for change.me, filled by upstream's PowerShell with random users and attack paths:
+# ACL chains, Kerberoasting, AS-REP roasting, DnsAdmins, DCSync, password spraying, anonymous
+# LDAP, a public SMB share, open WinRM permissions, firewall off. Source:
+# https://github.com/WaterExecution/vulnerable-AD-plus, vendored in vulnerable-AD-plus/. Built by
+# provision/main.yml from a controller Isoloom adds. VM targets only.
+# `isoloom run vagrant`, then `isoloom test vagrant`.
+version: 1
+name: vulnerable-ad-plus
+
+networks:
+  lab: { cidr: 10.60.85.0/24 }
+
+machines:
+  dc01:
+    networks: { lab: 10 }
+    services:
+      - { port: 53, name: dns }
+      - { port: 88, name: kerberos }
+      - { port: 135, name: rpc }
+      - { port: 389, name: ldap }
+      - { port: 445, name: smb }
+      - { port: 5985, name: winrm }
+    resources: { cpus: 2, memory_mb: 3072 }
+    vm:
+      os: windows-server-2019
+
+provision:
+  - ansible: provision/main.yml
+    requirements: provision/requirements.yml
+    groups:
+      dc: [dc01]
+
+checks:
+  - { name: dns answers, tcp: "dc01:53", wait: 300 }
+  - { name: kerberos answers, tcp: "dc01:88" }
+  - { name: ldap answers, tcp: "dc01:389" }
+  - { name: smb answers, tcp: "dc01:445" }
+  - { name: winrm answers, tcp: "dc01:5985" }
+  - checks/vulnerable-ad-plus.sh
+
+message: |
+  vulnerable-AD-plus is up: dc01, the domain controller of change.me, at {{ machines.dc01.addresses.lab }}.
+  Users and paths are random on every build. Start anonymously (LDAP, SMB), find a first
+  account, then chain ACLs to Domain Admin.

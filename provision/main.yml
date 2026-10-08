@@ -1,0 +1,64 @@
+# Builds the vulnerable-AD-plus lab on dc01, from the controller: promote a new forest
+# (change.me, the domain upstream's script calls itself with on its last line), then run
+# upstream's vulnadplus.ps1 unchanged.
+- name: vulnerable-AD-plus domain controller
+  hosts: dc
+  gather_facts: false
+  vars:
+    domain: change.me
+    netbios: CHANGE
+    # The domain's built-in Administrator (and the DSRM password). Promotion needs one set.
+    admin_password: "Vu1nADp!us#Forest2023"
+  tasks:
+    - name: Local Administrator password (becomes the domain Administrator's)
+      ansible.windows.win_user:
+        name: Administrator
+        password: "{{ admin_password }}"
+        password_never_expires: true
+
+    - name: AD DS role
+      ansible.windows.win_feature:
+        name: AD-Domain-Services
+        include_management_tools: true
+
+    - name: New forest {{ domain }}
+      microsoft.ad.domain:
+        dns_domain_name: "{{ domain }}"
+        domain_netbios_name: "{{ netbios }}"
+        safe_mode_password: "{{ admin_password }}"
+        reboot: true
+
+    - name: Wait for Active Directory Web Services
+      ansible.windows.win_shell: Get-ADDomain | Select-Object -ExpandProperty DNSRoot
+      register: addomain
+      until: addomain.rc == 0 and domain in addomain.stdout
+      retries: 30
+      delay: 20
+
+    - name: Upstream script and its runner
+      ansible.windows.win_copy:
+        src: "{{ item }}"
+        dest: C:\vulnerable-AD-plus\
+      loop: [../vulnerable-AD-plus/vulnadplus.ps1, run-vulnadplus.ps1]
+
+    # See run-vulnadplus.ps1: the script runs as a scheduled task, not in this WinRM session.
+    - name: Start vulnadplus.ps1 (scheduled task, SYSTEM)
+      ansible.windows.win_shell: |
+        if (Test-Path C:\vulnerable-AD-plus\done) { exit 0 }
+        schtasks /create /tn vulnadplus /ru SYSTEM /rl HIGHEST /sc once /st 00:00 /f /tr "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\vulnerable-AD-plus\run-vulnadplus.ps1"
+        schtasks /run /tn vulnadplus
+
+    - name: Wait for it
+      ansible.builtin.include_tasks: wait-done.yml
+      loop: "{{ range(0, 90) | list }}"
+
+    - name: It finished
+      ansible.builtin.assert:
+        that: vadp_done | bool
+        fail_msg: vulnadplus.ps1 did not finish within the wait
+
+    - name: Scheduled task removed
+      ansible.windows.win_shell: schtasks /delete /tn vulnadplus /f
+
+    - name: Restart (the script's last step)
+      ansible.windows.win_reboot:
