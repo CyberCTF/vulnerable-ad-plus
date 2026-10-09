@@ -5,7 +5,6 @@
   "category": "NETWORK",
   "difficulty": 2,
   "evidence_kind": "SECRET",
-  "capabilities": ["active-directory", "ldap-enumeration", "password-spraying", "kerberoasting", "acl-abuse", "dcsync"],
   "providers": [
     "virtualbox",
     "vmware_desktop",
