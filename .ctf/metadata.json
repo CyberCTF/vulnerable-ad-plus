@@ -1,7 +1,7 @@
 {
   "title": "vulnerable-AD-plus",
   "description": "A single Windows Server 2019 domain controller for change.me with random users and chained attack paths: anonymous LDAP and a public SMB share for a first foothold, password spraying, Kerberoasting, AS-REP roasting, ACL abuse chains, DnsAdmins, DCSync rights and open WinRM permissions.",
-  "question": "Compromise the change.me domain and reach Domain Admin.",
+  "question": "Compromise the change.me domain, reach Domain Admin and read C:\\ctf\\flag.txt on dc01.",
   "category": "NETWORK",
   "difficulty": 2,
   "evidence_kind": "SECRET",

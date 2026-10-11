@@ -10,6 +10,10 @@ ROOT = File.expand_path("../..", __dir__)
 PROJECT = Dir.children(ROOT).reject { |e| [".git", ".vagrant"].include?(e) || e.start_with?(".isoloom") }.sort
 # This host's CPU as QEMU names it: a machine built for another one runs emulated there.
 HOST_ARCH = RbConfig::CONFIG["host_cpu"] =~ /arm|aarch64/ ? "aarch64" : "x86_64"
+# Values provided at launch (empty when unset).
+INPUTS = {
+  "CTF_FLAG_MAIN" => ENV.fetch("CTF_FLAG_MAIN", ""),
+}
 # ESXi (vagrant-vmware-esxi): ESXI_VIRTUAL_NETWORK lists port groups, comma-separated: the
 # management network first, then one per network, in order (lab); a missing one reuses the last.
 ESXI_NETWORKS = ENV.fetch("ESXI_VIRTUAL_NETWORK", "VM Network").split(",").map(&:strip)
@@ -95,6 +99,7 @@ Vagrant.configure("2") do |config|
       v.cpus = 2
       v.memory = 3072
     end
+    m.vm.provision "shell", name: "provision/flag.ps1", path: File.join(ROOT, "provision/flag.ps1"), env: INPUTS.slice("CTF_FLAG_MAIN")
   end
 
   config.vm.define "isoloom-controller" do |m|

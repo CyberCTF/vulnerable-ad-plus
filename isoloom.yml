@@ -9,6 +9,9 @@
 version: 1
 name: vulnerable-ad-plus
 
+# Given by the CyberCTF launcher: this player's flag. Without it the development flag.
+inputs: [CTF_FLAG_MAIN]
+
 networks:
   lab: { cidr: 10.60.85.0/24 }
 
@@ -23,8 +26,12 @@ machines:
       - { port: 445, name: smb }
       - { port: 5985, name: winrm }
     resources: { cpus: 2, memory_mb: 3072 }
+    inputs: [CTF_FLAG_MAIN]
     vm:
       os: windows-server-2019
+      # The player's flag in C:\ctf\flag.txt, before the playbook: readable by Administrators
+      # and SYSTEM only, which on a domain controller means Domain Admin.
+      provision: [provision/flag.ps1]
 
 provision:
   - ansible: provision/main.yml
@@ -44,3 +51,4 @@ message: |
   vulnerable-AD-plus is up: dc01, the domain controller of change.me, at {{ machines.dc01.addresses.lab }}.
   Users and paths are random on every build. Start anonymously (LDAP, SMB), find a first
   account, then chain ACLs to Domain Admin.
+  Domain Admin reads the flag in C:\ctf\flag.txt on dc01.

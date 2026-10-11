@@ -3,7 +3,9 @@
   "resolved_version": 1,
   "name": "vulnerable-ad-plus",
   "instance": null,
-  "inputs": [],
+  "inputs": [
+    "CTF_FLAG_MAIN"
+  ],
   "networks": {
     "lab": {
       "cidr": "10.60.85.0/24",
@@ -71,7 +73,9 @@
         }
       ],
       "depends_on": [],
-      "inputs": [],
+      "inputs": [
+        "CTF_FLAG_MAIN"
+      ],
       "volumes": {},
       "resources": {
         "cpus": 2,
@@ -181,5 +185,5 @@
       }
     ]
   },
-  "message": "vulnerable-AD-plus is up: dc01, the domain controller of change.me, at 10.60.85.10.\nUsers and paths are random on every build. Start anonymously (LDAP, SMB), find a first\naccount, then chain ACLs to Domain Admin.\n"
+  "message": "vulnerable-AD-plus is up: dc01, the domain controller of change.me, at 10.60.85.10.\nUsers and paths are random on every build. Start anonymously (LDAP, SMB), find a first\naccount, then chain ACLs to Domain Admin.\nDomain Admin reads the flag in C:\\ctf\\flag.txt on dc01.\n"
 }

@@ -1,0 +1,75 @@
+{
+  "objectives": [
+    {
+      "key": "main",
+      "title": "Domain Admin",
+      "prompt": "Compromise the change.me domain, reach Domain Admin and read C:\\ctf\\flag.txt on dc01.",
+      "check": {
+        "evidence": "SECRET",
+        "format": "FLAG{%s}"
+      },
+      "dev": "FLAG{dev-vulnerable-ad-plus}",
+      "hints": [
+        "Start without credentials: anonymous LDAP and a public SMB share give the first leads.",
+        "With one account, spray passwords and look at which accounts can be roasted.",
+        "Chain the ACLs you find (BloodHound) towards an account with replication rights or Domain Admins."
+      ],
+      "steps": [
+        {
+          "key": "domain",
+          "title": "Name the domain",
+          "prompt": "What is the DNS name of the Active Directory domain?",
+          "check": {
+            "answer": [
+              "change.me"
+            ]
+          }
+        },
+        {
+          "key": "anon",
+          "title": "First look",
+          "prompt": "Which directory protocol answers queries here without credentials? (acronym)",
+          "check": {
+            "answer": [
+              "ldap"
+            ]
+          }
+        },
+        {
+          "key": "spray",
+          "title": "Many users, one password",
+          "prompt": "Which attack tries one likely password against many accounts to avoid lockouts?",
+          "check": {
+            "answer": [
+              "password spraying",
+              "password spray",
+              "spraying"
+            ]
+          }
+        },
+        {
+          "key": "roast",
+          "title": "Roast a service",
+          "prompt": "Which attack requests Kerberos service tickets for accounts that have an SPN, then cracks them offline?",
+          "check": {
+            "answer": [
+              "kerberoasting",
+              "kerberoast"
+            ]
+          }
+        },
+        {
+          "key": "dcsync",
+          "title": "Replicate the secrets",
+          "prompt": "Which technique uses directory replication rights to pull every account's password hash from the domain controller?",
+          "check": {
+            "answer": [
+              "dcsync",
+              "dc sync"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
