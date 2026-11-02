@@ -4,8 +4,12 @@
 # Plain PowerShell 2.0 and icacls, so it runs on every Windows version the labs use.
 $ErrorActionPreference = 'Stop'
 $dev = 'FLAG{dev-vulnerable-ad-plus}'
-$flag = $env:CTF_FLAG_MAIN
+# The launcher delivers the flag as a file (a sensitive input); without it the development flag.
+$seed = 'C:\Windows\Temp\ctf_flag_main'
+$flag = ''
+if (Test-Path $seed) { $flag = ([IO.File]::ReadAllText($seed)).Trim() }
 if (-not $flag) { $flag = $dev }
+if (Test-Path $seed) { Remove-Item -Force $seed -ErrorAction SilentlyContinue }
 $dir = 'C:\ctf'
 $file = Join-Path $dir 'flag.txt'
 New-Item -ItemType Directory -Force -Path $dir | Out-Null

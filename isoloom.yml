@@ -10,28 +10,31 @@ version: 1
 name: vulnerable-ad-plus
 
 # Given by the CyberCTF launcher: this player's flag. Without it the development flag.
-inputs: [CTF_FLAG_MAIN]
+inputs:
+  CTF_FLAG_MAIN: { description: "This player's flag, written to C:\\ctf\\flag.txt on dc01." }
 
 networks:
   lab: { cidr: 10.60.85.0/24 }
 
 machines:
   dc01:
+    os: windows-server@2019
     networks: { lab: 10 }
-    services:
-      - { port: 53, name: dns }
-      - { port: 88, name: kerberos }
-      - { port: 135, name: rpc }
-      - { port: 389, name: ldap }
-      - { port: 445, name: smb }
-      - { port: 5985, name: winrm }
+    ports:
+      dns: 53
+      kerberos: 88
+      rpc: 135
+      ldap: 389
+      smb: 445
+      winrm: 5985
     resources: { cpus: 2, memory_mb: 3072 }
-    inputs: [CTF_FLAG_MAIN]
-    vm:
-      os: windows-server-2019
-      # The player's flag in C:\ctf\flag.txt, before the playbook: readable by Administrators
-      # and SYSTEM only, which on a domain controller means Domain Admin.
-      provision: [provision/flag.ps1]
+    # The player's flag is staged for flag.ps1, which writes C:\ctf\flag.txt readable by
+    # Administrators and SYSTEM only (Domain Admin on a DC) before the playbook runs.
+    files:
+      - { path: 'C:\Windows\Temp\ctf_flag_main', input: CTF_FLAG_MAIN }
+    app:
+      steps:
+        - run: provision/flag.ps1
 
 provision:
   - ansible: provision/main.yml
